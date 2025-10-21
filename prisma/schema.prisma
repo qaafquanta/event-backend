@@ -1,0 +1,183 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole{
+    CUSTOMER
+    ORGANIZER
+}
+
+enum TransactionStatus{
+    WAITING_PAYMENT
+    WAITING_CONFIRMATION
+    DONE
+    REJECTED
+    EXPIRED
+    CANCELED
+}
+
+model User{
+    id String @id @default(uuid())
+    email String @unique
+    password String
+    username String 
+    profilePicture String?
+    role UserRole @default(CUSTOMER)
+    referralNumber String @unique //ini harus dikasih default
+    //referredById String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now())
+
+    // referredBy        User?     @relation("Referrals", fields: [referredById], references: [id])
+    // referrals         User[]    @relation("Referrals")
+
+    points Point[]
+    coupons Coupon[]
+    events Event[]
+    transactions Transaction[]
+    reviews Review[]
+}
+
+model Point{
+    id String @id @default(uuid())
+    userId String
+    amount Int
+    expiresAt DateTime
+    isUsed Boolean
+    createdAt DateTime @default(now())
+
+    user User @relation(fields:[userId],references:[id],onDelete: Cascade)
+}
+
+model Coupon{
+    id String @id @default(uuid())
+    userId String
+    code String @unique //format code perlu diinisialisasi
+    discountPercent Int
+    expiresAt DateTime
+    isUsed Boolean @default(false)
+    createdAt DateTime @default(now())
+
+    user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+    transactions Transaction[]
+}
+
+model Event{
+    id String @id @default(uuid())
+    organizerId String
+    name String
+    description String @db.Text
+    category String //perlu di enum
+    location String //nama tempat
+    city String
+    address String @db.Text //koordinat
+    startDate DateTime
+    endDate DateTime
+    price Int //price in IDR, 0 if event is free
+    availableSeats Int
+    totalSeats Int
+    imageUrl String?
+    createdAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+
+    organizer User @relation(fields:[organizerId],references:[id],onDelete: Cascade)
+
+    // ticketTiers ticketTier[]
+    vouchers Voucher[]
+    transactions Transaction[]
+    reviews Review[]
+}
+
+model Voucher{
+    id String @id @default(uuid())
+    eventId String
+    code String @unique
+    discountPercentage Int
+    maxUsage Int
+    currentUsage Int @default(0)
+    startDate DateTime
+    endDate DateTime
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    event Event @relation(fields:[eventId],references:[id],onDelete: Cascade)
+
+    transactions Transaction[]
+
+}
+
+model Transaction{
+    id String @id @default(uuid())
+    userId String 
+    eventId String
+    status TransactionStatus @default(WAITING_PAYMENT)
+    totalAmount Int
+    pointUsed Int @default(0)
+    discountAmount Int @default(0)
+    finalAmount Int //total transaksi setelah dikurangi point dan discount
+    paymentProof String
+    voucherId String?
+    couponId String?
+    expiresAt DateTime //payment deadline (2 jam setelah transaksi dibuat) : opsional sih sebenernya, soalnya bsia dihitung dari createdAt
+    createdAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+
+    user User @relation(fields:[userId],references:[id],onDelete: Cascade)
+    event Event @relation(fields:[eventId],references:[id],onDelete: Cascade)
+    coupon Coupon? @relation(fields:[couponId],references:[id])
+    voucher Voucher? @relation(fields:[voucherId],references:[id])
+
+    transactionItems TransactionItem[]
+}
+
+model TransactionItem{
+    id String @id @default(uuid())
+    transactionId String
+    // ticketTierId String
+    quantity Int //jumlah kursi yang dibeli
+    pricePerTicket Int //harga tiket saat waktu pembelian
+    subtotal Int // quantity * pricePerTicket
+    createdAt DateTime @default(now())
+
+    transaction Transaction @relation(fields:[transactionId],references:[id],onDelete: Cascade)
+    // ticketTier TicketTIer @relation(fields:[ticketTIerId],references:[id],onDelete: Cascade)
+}
+
+model Review{
+    id String @id @default(uuid())
+    userId String
+    eventId String
+    rating Int //1-5 Stars
+    comment String @db.Text
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields:[userId],references:[id],onDelete: Cascade)
+    event Event @relation(fields:[eventId],references:[id],onDelete: Cascade)
+}
+
+// model PasswordReset {
+//   id          String    @id @default(uuid())
+//   email       String
+//   token       String    @unique
+//   expiresAt   DateTime
+//   isUsed      Boolean   @default(false)
+//   createdAt   DateTime  @default(now())
+
+//   @@index([email])
+//   @@index([token])
+// }
+
+
