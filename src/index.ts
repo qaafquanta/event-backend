@@ -3,6 +3,7 @@ dotenv.config();
 import cors from 'cors';
 import express from 'express';
 import type {Application, NextFunction, Request,Response} from 'express'
+import authRouter from "./routes/auth.route.js"
 
 const PORT = process.env.PORT;
 
@@ -18,7 +19,7 @@ app.get("/",(req:Request,res:Response)=>{
     res.status(200).send("<h1>ORM API</h1>")
 })
 
-// app.use("/auth",authRouter)
+app.use("/auth",authRouter)
 // app.use("/blog",blogRouter)
 
 //error middleware
