@@ -35,8 +35,8 @@ model User{
     username String 
     profilePicture String?
     role UserRole @default(CUSTOMER)
-    referralNumber String @unique //ini harus dikasih default
-    //referredById String?
+    referralNumber String? @unique @default(uuid())//ini harus dikasih default
+    // referredById String
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now())
 
