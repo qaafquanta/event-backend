@@ -8,6 +8,25 @@ import eventRouter from "./routes/event.route.js";
 
 const PORT = process.env.PORT;
 
+// export default class App {
+//     private app: Express;
+
+//     constructor(){
+//         this.app = express();
+//         this.configure();
+//     }
+
+//     private configure():void{
+//         this.app.use(cors());
+//         this.app.use(express.json());
+//         // this.app.use(urlencoded({extended:true}));
+//     }
+
+//     public start():void{
+//         this.app.listen(PORT,()=>{console.info("API RUNNING ON PORT",PORT)})
+//     }
+// }
+
 //define app server
 const app: Application = express();
 
