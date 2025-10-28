@@ -54,14 +54,36 @@ export const getEventById = async (req: Request, res: Response) => {
 // CREATE event baru
 export const createEvent = async (req: Request, res: Response) => {
   try {
-    const { name, description, date, location, imageUrl } = req.body;
+    const {
+      organizerId,
+      name,
+      description,
+      category,
+      location,
+      city,
+      address,
+      startDate,
+      endDate,
+      price,
+      availableSeats,
+      totalSeats,
+      imageUrl,
+    } = req.body;
 
     const newEvent = await prisma.event.create({
       data: {
+        organizerId,
         name,
         description,
-        startDate: new Date(date),
+        category,
         location,
+        city,
+        address,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        price,
+        availableSeats,
+        totalSeats,
         imageUrl,
       },
     });
