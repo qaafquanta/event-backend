@@ -32,6 +32,73 @@ export const getAllEvents = async (req: Request, res: Response) => {
   }
 };
 
+//getAll event for filter upcoming event
+
+export const filterAllEvents = async (req: Request, res: Response) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      location = "",
+      category = "",
+    } = req.query;
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const where: any = {
+      AND: [],
+    };
+
+    // SEARCH BY NAME OR DESCRIPTION
+    if (search) {
+      where.AND.push({
+        OR: [
+          { name: { contains: String(search), mode: "insensitive" } },
+          { description: { contains: String(search), mode: "insensitive" } },
+        ],
+      });
+    }
+
+    // FILTER BY LOCATION
+    if (location) {
+      where.AND.push({
+        location: { contains: String(location), mode: "insensitive" },
+      });
+    }
+
+    // FILTER BY CATEGORY
+    if (category) {
+      where.AND.push({
+        category: { contains: String(category), mode: "insensitive" },
+      });
+    }
+
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.event.count({ where }),
+    ]);
+
+    return res.json({
+      success: true,
+      data: events,
+      pagination: {
+        currentPage: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+        totalData: total,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send(error);
+  }
+};
+
 // GET detail event by ID
 export const getEventById = async (req: Request, res: Response) => {
   try {
