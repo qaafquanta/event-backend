@@ -31,17 +31,17 @@ enum TransactionStatus{
 model User{
     id String @id @default(uuid())
     email String @unique
-    password String
+    password String 
     username String 
     profilePicture String?
     role UserRole @default(CUSTOMER)
     referralNumber String? @unique @default(uuid())//ini harus dikasih default
-    // referredById String
+    referredById String?
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now())
 
-    // referredBy        User?     @relation("Referrals", fields: [referredById], references: [id])
-    // referrals         User[]    @relation("Referrals")
+    referredBy        User?     @relation("Referrals", fields: [referredById], references: [id])
+    referrals         User[]    @relation("Referrals")
 
     points Point[]
     coupons Coupon[]

@@ -1,22 +1,22 @@
 import jwt from "jsonwebtoken"
 
-const sign = jwt.sign
-
 interface IDataToken {
-    id:number;
+    id:string;
     role?:string;
 }
 
+const sign = jwt.sign
 const secretKey = process.env.SECRET_KEY_TKN || "secret";
 
 export const createToken = (data: IDataToken)=>{
     return sign(
         {
-            id:data.id
+            id:data.id,
+            role:data.role
         },
         secretKey,
         {
-            expiresIn:"2m"
+            expiresIn:"30d"
         }
     )
 }

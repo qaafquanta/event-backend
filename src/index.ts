@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import cors from 'cors';
+import cookieParser from "cookie-parser"
 import type {Application, NextFunction, Request,Response} from 'express'
 import express, {urlencoded, type Express} from 'express'
 import authRouter from "./routes/auth.route.js"
@@ -31,8 +32,14 @@ const PORT = process.env.PORT;
 const app: Application = express();
 
 //define app basic middleware
-app.use(cors()) //allow another domain to access api
+app.use(
+  cors({
+    origin: ["http://localhost:8099","http://localhost:3001"], // alamat frontend
+    credentials: true, // penting agar cookie bisa dikirim
+  })
+);
 app.use(express.json()) // for receive req.body
+app.use(cookieParser())
 
 app.use("/auth",authRouter)
 app.use("/event",eventRouter)
